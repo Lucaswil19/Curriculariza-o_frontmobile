@@ -45,6 +45,23 @@ flows should be stack screens where the bottom tab can be hidden.
 Back behavior from source `navigate(-1)` must become React Navigation
 `goBack()` when possible, with fallback to the `Today` route.
 
+Navigation implementation status:
+
+- `front_mobile/src/utils/navigationTypes.ts` defines `RootStackParamList` and
+  `MainTabParamList` for every route in the navigation contract.
+- `front_mobile/App.tsx` now starts from `NavigationContainer` with a root
+  native stack and bottom tabs.
+- Bottom tabs are wired for `Today`, `Cycle`, `Contents` and `Profile`.
+- Stack screens are wired for `ContentDetail`, `AnonymousQuestion`,
+  `Symptoms`, `Reminders`, `Support`, `LifeStages` and `NotFound`.
+- `front_mobile/src/utils/navigation.ts` implements the mobile back fallback:
+  use `goBack()` when history exists, otherwise navigate to the `Today` tab.
+- Temporary placeholders were replaced by the migrated page components in
+  `front_mobile/App.tsx`: `TodayPage`, `CyclePage`, `ContentsPage`,
+  `ProfilePage`, `ContentDetailPage`, `AnonymousQuestionPage`,
+  `SymptomsPage`, `RemindersPage`, `SupportPage`, `LifeStagesPage` and
+  `NotFoundPage`.
+
 ## Page Mapping
 
 | Source page | Mobile page | Services/utilities expected | Migration notes |
@@ -62,23 +79,42 @@ Back behavior from source `navigate(-1)` must become React Navigation
 | `NotFound.tsx` | `front_mobile/src/pages/NotFoundPage.tsx` | navigation helper | Replace web anchor with mobile fallback navigation to `Today`. |
 | `Index.tsx` | excluded | none | Lovable placeholder not wired as a main route; do not migrate as a product screen. |
 
+Phase 7 migration status:
+
+- `TodayPage`, `CyclePage`, `ContentsPage`, `ContentDetailPage`,
+  `SymptomsPage`, `RemindersPage` and `AnonymousQuestionPage` are migrated
+  under `front_mobile/src/pages`.
+- `ProfilePage` is migrated and uses `AppContext` plus `profileService` for
+  shared profile/preference state.
+- `SupportPage` is migrated and uses `supportService` for emergency contacts
+  and support copy.
+- `LifeStagesPage` is migrated from static `lifeStages` data and routes its
+  content CTA to the Conteudos tab.
+- `NotFoundPage` is migrated as a mobile fallback with a button back to the
+  Hoje tab.
+- `front_mobile/App.tsx` imports the real migrated pages instead of
+  `PlaceholderPage`.
+- Search validation for web-only page imports/patterns returned no matches for
+  `react-router-dom`, `lucide-react`, `sonner`, Radix imports, DOM globals,
+  HTML element JSX and `className` in `front_mobile/src/pages`.
+
 ## Component Mapping
 
 | Source artifact | Mobile target | Responsibility |
 |---|---|---|
-| `src/components/BottomNav.tsx` | `front_mobile/src/components/layout/BottomTabs.tsx` and `front_mobile/App.tsx` | Bottom tab visuals plus route wiring for Today, Cycle, Contents and Profile. |
-| `src/components/QuickActionsModal.tsx` | `front_mobile/src/components/layout/QuickActionsSheet.tsx` | Mobile sheet/modal for quick actions and action-to-route mapping. |
-| `src/components/MedicalDisclaimer.tsx` | `front_mobile/src/components/ui/MedicalDisclaimer.tsx` | Preserve normal and compact health-safety copy. |
+| `src/components/BottomNav.tsx` | `front_mobile/src/components/layout/BottomTabs.tsx` and `front_mobile/App.tsx` | Bottom tab visuals plus route wiring for Today, Cycle, Contents and Profile. Implemented as a React Native tab visual component; route integration remains in `App.tsx`. |
+| `src/components/QuickActionsModal.tsx` | `front_mobile/src/components/layout/QuickActionsSheet.tsx` | Mobile sheet/modal for quick actions and action-to-route mapping. Implemented with `Modal`, touch actions and the preserved id-to-route mapping. |
+| `src/components/MedicalDisclaimer.tsx` | `front_mobile/src/components/ui/MedicalDisclaimer.tsx` | Preserve normal and compact health-safety copy. Implemented with React Native `View`/`Text`. |
 | `src/components/NavLink.tsx` | excluded | React Router wrapper; replace with React Navigation actions. |
-| `src/components/ui/button.tsx` | `front_mobile/src/components/ui/AppButton.tsx` | Recreate only needed button variants with `Pressable`. |
-| `src/components/ui/card.tsx` | `front_mobile/src/components/ui/AppCard.tsx` | Recreate card surface with `View` and `StyleSheet`. |
-| `src/components/ui/input.tsx` | `front_mobile/src/components/ui/AppTextInput.tsx` | Recreate text entry with `TextInput`. |
-| `src/components/ui/switch.tsx` and source toggle patterns | `front_mobile/src/components/ui/AppToggle.tsx` | Recreate boolean toggle with React Native-compatible control. |
-| `src/components/ui/badge.tsx` and chip spans | `front_mobile/src/components/ui/AppChip.tsx` | Recreate badges/chips for categories, symptoms and age labels. |
-| `src/components/ui/sonner.tsx`, `src/components/ui/toast.tsx`, `sonner` calls | `front_mobile/src/components/ui/FeedbackMessage.tsx` | Replace web toast success messages with mobile-compatible feedback. |
+| `src/components/ui/button.tsx` | `front_mobile/src/components/ui/AppButton.tsx` | Recreate only needed button variants with `Pressable`. Implemented with variants, sizes, loading and disabled states. |
+| `src/components/ui/card.tsx` | `front_mobile/src/components/ui/AppCard.tsx` | Recreate card surface with `View` and `StyleSheet`. Implemented with optional title, subtitle and footer. |
+| `src/components/ui/input.tsx` | `front_mobile/src/components/ui/AppTextInput.tsx` | Recreate text entry with `TextInput`. Implemented with label, helper/error text and multiline support. |
+| `src/components/ui/switch.tsx` and source toggle patterns | `front_mobile/src/components/ui/AppToggle.tsx` | Recreate boolean toggle with React Native-compatible control. Implemented with `Switch`, label and description. |
+| `src/components/ui/badge.tsx` and chip spans | `front_mobile/src/components/ui/AppChip.tsx` | Recreate badges/chips for categories, symptoms and age labels. Implemented with tone variants and selected/disabled states. |
+| `src/components/ui/sonner.tsx`, `src/components/ui/toast.tsx`, `sonner` calls | `front_mobile/src/components/ui/FeedbackMessage.tsx` | Replace web toast success messages with mobile-compatible feedback. Implemented with success/info/warning variants and optional dismiss. |
 | Generated Radix/shadcn UI folder | excluded as direct ports | Do not migrate DOM/Tailwind/Radix wrappers; recreate only required mobile primitives. |
-| Page-level headers and back buttons | `front_mobile/src/components/layout/AppHeader.tsx` | Shared title/back/header pattern. |
-| Page containers and safe bottom spacing | `front_mobile/src/components/layout/SafeAreaScreen.tsx` and `front_mobile/src/components/layout/AppScreen.tsx` | Shared safe-area and scroll/container behavior. |
+| Page-level headers and back buttons | `front_mobile/src/components/layout/AppHeader.tsx` | Shared title/back/header pattern. Implemented with optional back and side actions. |
+| Page containers and safe bottom spacing | `front_mobile/src/components/layout/SafeAreaScreen.tsx` and `front_mobile/src/components/layout/AppScreen.tsx` | Shared safe-area and scroll/container behavior. Implemented with safe-area and scroll/static modes. |
 
 ## Static Data Mapping
 
@@ -124,6 +160,19 @@ Target: `front_mobile/src/data/mockData.ts`
 | Quick action navigation | `QuickActionsModal.tsx` | `QuickActionsSheet`, navigation types | Preserve source id-to-route mapping for menstruacao, sintomas, corrimento, colica, humor, lembrete, pergunta and conteudo. |
 | Medical disclaimer | `MedicalDisclaimer.tsx` | `front_mobile/src/components/ui/MedicalDisclaimer.tsx` | Preserve normal and compact health-safety copy in educational flows. |
 
+## Global State Decision
+
+Profile/preferences state is shared app state because the Perfil screen mutates
+notification and data-sharing values through the same profile boundary used by
+other profile-aware flows. `front_mobile/src/context/AppContext.tsx` wraps
+`profileService` and exposes the current profile, profile load error,
+preference updates and refresh behavior.
+
+Redux is not justified for the current migrated behavior. Existing state is
+limited to local form/list/chat state plus profile/preferences, so Context API
+keeps the architecture simpler while preserving a single shared boundary for
+profile data.
+
 ## API Boundary Mapping
 
 The source app currently uses static data and local component state. No active
@@ -152,6 +201,56 @@ call services/hooks, and those services may call `src/api`.
 | `public/placeholder.svg` | Do not migrate unless a placeholder is explicitly needed; only used by Lovable placeholder `Index.tsx`. |
 | `public/robots.txt` | Exclude; web-only. |
 | `front_mobile/assets/images/*` | Existing Expo template assets; preserve until the asset migration task decides replacements. |
+
+Asset migration status:
+
+- `public/favicon.ico` was copied to `front_mobile/src/assets/favicon.ico` as
+  the preserved source visual reference.
+- `public/placeholder.svg` remains excluded because the mapped source screen
+  that used it is not a product route.
+- `public/robots.txt` remains excluded because it is web-only.
+- Existing Expo template assets under `front_mobile/assets/images/` were left
+  untouched.
+
+## Shared Base Migration Status
+
+- `front_mobile/src/utils/theme.ts` recreates the source CSS/Tailwind color,
+  spacing, typography, radius and card shadow tokens as React Native-friendly
+  constants.
+- `front_mobile/src/data/mockData.ts` now contains the static source data from
+  `minha-saude-feminina mobile/src/data/mockData.ts` plus exported TypeScript
+  types for profile, symptoms, reminders, periods, content categories, quick
+  actions, life stages, emergency contacts and anonymous messages.
+- Source data remains local and static at this stage; API adapters and services
+  will wrap it in later Phase 5 tasks.
+- `front_mobile/src/utils/date.ts` provides ISO date parsing, formatting,
+  date comparison and day arithmetic helpers for screens/services.
+- `front_mobile/src/utils/text.ts` provides accent-insensitive normalization
+  and matching helpers for search/filter flows.
+- `front_mobile/src/utils/cycle.ts` preserves the source cycle rules for cycle
+  day, phase, predicted period, fertile window, ovulation and calendar status.
+- `front_mobile/src/api/types.ts` defines the normalized `ApiResult<T>` and
+  `ApiError` contract required by `api-contract.md`.
+- `front_mobile/src/api/contentApi.ts` exposes local content category/article
+  reads through the API boundary and returns `CONTENT_NOT_FOUND` for unknown
+  content detail ids.
+- `front_mobile/src/api/profileApi.ts`, `symptomsApi.ts`, `remindersApi.ts`
+  and `supportApi.ts` expose local mock data behind normalized API results.
+- `front_mobile/src/services/contentService.ts` preserves category filtering,
+  accent-insensitive search and content detail lookup.
+- `front_mobile/src/services/cycleService.ts` composes profile, period,
+  symptom, health tip and calendar status rules for Today and Cycle screens.
+- `front_mobile/src/services/symptomsService.ts` preserves select/deselect,
+  default `leve` intensity, intensity updates and save feedback count rules.
+- `front_mobile/src/services/remindersService.ts` wraps reminder listing,
+  date formatting and completion feedback.
+- `front_mobile/src/services/profileService.ts` wraps profile stats and
+  immediate notification/data-sharing preference toggles.
+- `front_mobile/src/services/supportService.ts` wraps emergency contacts and
+  support screen copy.
+- `front_mobile/src/services/anonymousQuestionService.ts` preserves blank
+  input validation, keyword response selection and UBS guidance for anonymous
+  questions.
 
 ## Dependency Replacement Map
 
@@ -191,6 +290,23 @@ Verified under `front_mobile/`:
 | Root `index.ts` | Created and registers `App.tsx` with Expo `registerRootComponent` | `package.json` still points at `expo-router/entry` until T038 switches the main entry to `index.ts`. |
 | Template components | `components/`, `constants/`, `hooks/` | Existing Expo template files are outside the required structure and should not become the migration architecture. |
 | Existing assets | `assets/images/*` | Preserve until asset migration task; do not delete during verification. |
+
+Scaffold changes completed:
+
+- `front_mobile/package.json` now starts from `index.ts`, which registers the
+  root `App.tsx`, instead of `expo-router/entry`.
+- `front_mobile/app.json` no longer enables the Expo Router plugin or
+  `experiments.typedRoutes`; native icon, splash and app metadata were
+  preserved.
+- The existing Expo project root remains unchanged. No new Expo project was
+  created.
+- React Navigation base packages required by the navigation contract are
+  present in `package.json`: `@react-navigation/native`,
+  `@react-navigation/bottom-tabs`, `react-native-screens`,
+  `react-native-safe-area-context` and `react-native-gesture-handler`.
+- `@react-navigation/native-stack` is declared in `package.json` for the root
+  stack navigator planned by the navigation contract. The package was already
+  resolved in `package-lock.json`, so no source project change was needed.
 
 Current useful installed dependencies:
 
