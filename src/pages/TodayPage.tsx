@@ -9,10 +9,9 @@ import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { MedicalDisclaimer } from '../components/ui/MedicalDisclaimer';
 import { AppScreen } from '../components/layout/AppScreen';
 import { AppHeader } from '../components/layout/AppHeader';
-import { mockSymptomTypes } from '../data/mockData';
 import { getCycleSummary } from '../services/cycleService';
 import { getUserReminders } from '../services/remindersService';
-import { getUserSymptoms } from '../services/symptomsService';
+import { getSymptomOptions, getUserSymptoms } from '../services/symptomsService';
 import { formatShortDate, toIsoDate } from '../utils/date';
 import type { RootStackNavigation } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
@@ -38,9 +37,15 @@ export function TodayPage() {
 
   const cycleResult = getCycleSummary(today);
   const symptomsResult = getUserSymptoms();
+  const symptomOptionsResult = getSymptomOptions();
   const remindersResult = getUserReminders();
 
-  if (!cycleResult.ok || !symptomsResult.ok || !remindersResult.ok) {
+  if (
+    !cycleResult.ok ||
+    !symptomsResult.ok ||
+    !symptomOptionsResult.ok ||
+    !remindersResult.ok
+  ) {
     return (
       <AppScreen>
         <ErrorMessage message="Nao foi possivel carregar o resumo de hoje." />
@@ -57,6 +62,7 @@ export function TodayPage() {
     .filter((reminder) => !reminder.completed)
     .slice(0, 3);
   const cycle = cycleResult.data;
+  const symptomOptions = symptomOptionsResult.data;
 
   return (
     <AppScreen contentContainerStyle={styles.screen}>
@@ -87,7 +93,7 @@ export function TodayPage() {
         {todaySymptoms.length > 0 ? (
           <View style={styles.chipGroup}>
             {todaySymptoms.map((symptom) => {
-              const symptomType = mockSymptomTypes.find(
+              const symptomType = symptomOptions.find(
                 (type) => type.id === symptom.type,
               );
 

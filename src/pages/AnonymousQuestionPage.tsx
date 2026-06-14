@@ -16,6 +16,7 @@ import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { MedicalDisclaimer } from '../components/ui/MedicalDisclaimer';
 import { createAnonymousMessage, submitAnonymousQuestion } from '../services/anonymousQuestionService';
 import type { AnonymousMessage } from '../data/mockData';
+import { navigateBackOrToday } from '../utils/navigation';
 import type { RootStackScreenProps } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
 
@@ -37,6 +38,7 @@ export function AnonymousQuestionPage({
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isResponding, setIsResponding] = useState(false);
+  const handleBack = () => navigateBackOrToday(navigation);
 
   useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
@@ -77,7 +79,7 @@ export function AnonymousQuestionPage({
         style={styles.keyboard}
       >
         <AppHeader
-          onBack={navigation.goBack}
+          onBack={handleBack}
           subtitle="Suas duvidas sao sigilosas"
           title="Pergunta anonima"
         />

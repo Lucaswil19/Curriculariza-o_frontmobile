@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
   },
   container: {
-    backgroundColor: '#fff1f2',
+    backgroundColor: theme.colors.destructiveLight,
     borderColor: theme.colors.destructive,
     borderRadius: theme.radii.md,
     borderWidth: 1,

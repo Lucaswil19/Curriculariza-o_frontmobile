@@ -6,16 +6,19 @@ import { AppButton } from '../components/ui/AppButton';
 import { AppCard } from '../components/ui/AppCard';
 import { AppChip } from '../components/ui/AppChip';
 import { lifeStages } from '../data/mockData';
+import { navigateBackOrToday } from '../utils/navigation';
 import type { RootStackScreenProps } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
 
 type LifeStagesPageProps = RootStackScreenProps<'LifeStages'>;
 
 export function LifeStagesPage({ navigation }: LifeStagesPageProps) {
+  const handleBack = () => navigateBackOrToday(navigation);
+
   return (
     <AppScreen>
       <AppHeader
-        onBack={navigation.goBack}
+        onBack={handleBack}
         subtitle="Conteudos e cuidados para cada momento da sua jornada"
         title="Trilhas por fase da vida"
       />

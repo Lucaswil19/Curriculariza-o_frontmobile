@@ -13,6 +13,7 @@ import {
   getContentById,
   getContentCategories,
 } from '../services/contentService';
+import { navigateBackOrToday } from '../utils/navigation';
 import type { RootStackScreenProps } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
 
@@ -25,15 +26,16 @@ export function ContentDetailPage({
   const [feedback, setFeedback] = useState<string | null>(null);
   const contentResult = getContentById(route.params.id);
   const categoriesResult = getContentCategories();
+  const handleBack = () => navigateBackOrToday(navigation);
 
   if (!contentResult.ok || !categoriesResult.ok) {
     return (
       <AppScreen>
-        <AppHeader onBack={navigation.goBack} title="Conteudo" />
+        <AppHeader onBack={handleBack} title="Conteudo" />
         <ErrorMessage
           action={
             <AppButton
-              onPress={navigation.goBack}
+              onPress={handleBack}
               title="Voltar"
               variant="secondary"
             />
@@ -53,7 +55,7 @@ export function ContentDetailPage({
     <AppScreen contentContainerStyle={styles.screen}>
       <View style={styles.hero}>
         <AppHeader
-          onBack={navigation.goBack}
+          onBack={handleBack}
           subtitle={content.summary}
           title={content.title}
         />

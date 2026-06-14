@@ -42,7 +42,7 @@ export type CalendarDay = {
 export function getCycleSummary(referenceDate = new Date()): ApiResult<CycleSummary> {
   const cycleDay = getCycleDay(mockUser, referenceDate);
   const ovulationDate = getOvulationDate(mockUser);
-  const tipIndex = Math.max(cycleDay - 1, 0) % healthTips.length;
+  const tipIndex = referenceDate.getDate() % healthTips.length;
 
   return ok({
     user: mockUser,

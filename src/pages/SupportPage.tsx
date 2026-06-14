@@ -5,6 +5,7 @@ import { AppScreen } from '../components/layout/AppScreen';
 import { AppCard } from '../components/ui/AppCard';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { getSupportInfo } from '../services/supportService';
+import { navigateBackOrToday } from '../utils/navigation';
 import type { RootStackScreenProps } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
 
@@ -12,11 +13,12 @@ type SupportPageProps = RootStackScreenProps<'Support'>;
 
 export function SupportPage({ navigation }: SupportPageProps) {
   const supportResult = getSupportInfo();
+  const handleBack = () => navigateBackOrToday(navigation);
 
   if (!supportResult.ok) {
     return (
       <AppScreen>
-        <AppHeader onBack={navigation.goBack} title="Apoio" />
+        <AppHeader onBack={handleBack} title="Apoio" />
         <ErrorMessage message="Nao foi possivel carregar os canais de apoio." />
       </AppScreen>
     );
@@ -28,7 +30,7 @@ export function SupportPage({ navigation }: SupportPageProps) {
     <AppScreen contentContainerStyle={styles.screen}>
       <View style={styles.hero}>
         <AppHeader
-          onBack={navigation.goBack}
+          onBack={handleBack}
           subtitle={supportInfo.description}
           title="Suporte e acolhimento"
         />
@@ -116,7 +118,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   emergencyCard: {
-    backgroundColor: '#fff1f2',
+    backgroundColor: theme.colors.destructiveLight,
     borderColor: theme.colors.destructive,
   },
   emergencyIcon: {

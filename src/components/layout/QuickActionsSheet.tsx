@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   backdrop: {
-    backgroundColor: 'rgba(43, 27, 50, 0.32)',
+    backgroundColor: theme.colors.backdrop,
     flex: 1,
     justifyContent: 'flex-end',
   },

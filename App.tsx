@@ -1,12 +1,26 @@
 import 'react-native-gesture-handler';
 
+import {
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+} from '@expo-google-fonts/nunito';
 import { Ionicons } from '@expo/vector-icons';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import type { ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import {
+  QuickActionsSheet,
+  type QuickActionRoute,
+} from './src/components/layout/QuickActionsSheet';
 import { AppProvider } from './src/context/AppContext';
 import { AnonymousQuestionPage } from './src/pages/AnonymousQuestionPage';
 import { ContentDetailPage } from './src/pages/ContentDetailPage';
@@ -23,9 +37,22 @@ import type {
   MainTabParamList,
   RootStackParamList,
 } from './src/utils/navigationTypes';
+import { theme } from './src/utils/theme';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const defaultTextProps = Text as typeof Text & {
+  defaultProps?: {
+    style?: unknown;
+  };
+};
+
+defaultTextProps.defaultProps = defaultTextProps.defaultProps ?? {};
+defaultTextProps.defaultProps.style = [
+  { fontFamily: theme.typography.fontFamily },
+  defaultTextProps.defaultProps.style,
+];
 
 const screenTitles: Record<keyof MainTabParamList, string> = {
   Today: 'Hoje',
@@ -47,20 +74,22 @@ const tabIcons: Record<
 function MainTabs() {
   return (
     <Tab.Navigator
+      tabBar={(props) => <MainTabBar {...props} />}
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#be185d',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.tabInactive,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#f9a8d4',
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.rosaLight,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
+          fontFamily: theme.typography.fontFamily,
           fontSize: 12,
-          fontWeight: '700',
+          fontWeight: theme.typography.weights.bold,
         },
         tabBarIcon: ({ color, size }) => (
           <Ionicons color={color} name={tabIcons[route.name]} size={size} />
@@ -91,7 +120,107 @@ function MainTabs() {
   );
 }
 
+function MainTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
+  const [quickActionsVisible, setQuickActionsVisible] = useState(false);
+
+  const handleQuickNavigate = (
+    route: QuickActionRoute,
+    sourceAction?: string,
+  ) => {
+    if (route === 'Contents' || route === 'Cycle') {
+      navigation.navigate(route);
+      return;
+    }
+
+    navigation.getParent()?.navigate(route, sourceAction ? { sourceAction } : undefined);
+  };
+
+  return (
+    <>
+      <View style={styles.tabBar}>
+        {state.routes.map((route, index) => {
+          const descriptor = descriptors[route.key];
+          const options = descriptor.options;
+          const isFocused = state.index === index;
+          const color = isFocused ? theme.colors.primary : theme.colors.tabInactive;
+          const iconName = tabIcons[route.name as keyof MainTabParamList];
+          const label =
+            typeof options.title === 'string'
+              ? options.title
+              : screenTitles[route.name as keyof MainTabParamList];
+
+          const handlePress = () => {
+            const event = navigation.emit({
+              canPreventDefault: true,
+              target: route.key,
+              type: 'tabPress',
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          const item = (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isFocused }}
+              key={route.key}
+              onPress={handlePress}
+              style={styles.tabItem}
+            >
+              <Ionicons color={color} name={iconName} size={22} />
+              <Text
+                numberOfLines={1}
+                style={[styles.tabLabel, isFocused && styles.activeTabLabel]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+
+          if (index === 2) {
+            return (
+              <View key={route.key} style={styles.tabSlotWithAction}>
+                <Pressable
+                  accessibilityLabel="Abrir acoes rapidas"
+                  accessibilityRole="button"
+                  onPress={() => setQuickActionsVisible(true)}
+                  style={styles.quickActionButton}
+                >
+                  <Ionicons color={theme.colors.primaryForeground} name="add" size={30} />
+                </Pressable>
+                {item}
+              </View>
+            );
+          }
+
+          return item;
+        })}
+      </View>
+
+      <QuickActionsSheet
+        onClose={() => setQuickActionsVisible(false)}
+        onNavigate={handleQuickNavigate}
+        visible={quickActionsVisible}
+      />
+    </>
+  );
+}
+
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Nunito_400Regular,
+    Nunito_500Medium,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <AppProvider>
       <NavigationContainer>
@@ -99,7 +228,7 @@ export default function App() {
         <Stack.Navigator
           initialRouteName="MainTabs"
           screenOptions={{
-            contentStyle: { backgroundColor: '#fff7fb' },
+            contentStyle: { backgroundColor: theme.colors.background },
             headerShown: false,
           }}
         >
@@ -119,3 +248,50 @@ export default function App() {
     </AppProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  activeTabLabel: {
+    color: theme.colors.primary,
+  },
+  quickActionButton: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primaryForeground,
+    borderRadius: 28,
+    borderWidth: 4,
+    height: 56,
+    justifyContent: 'center',
+    marginTop: -28,
+    width: 56,
+    ...theme.shadows.card,
+  },
+  tabBar: {
+    alignItems: 'center',
+    backgroundColor: theme.colors.card,
+    borderTopColor: theme.colors.rosaLight,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    height: 72,
+    paddingBottom: 8,
+    paddingHorizontal: 8,
+    paddingTop: 8,
+  },
+  tabItem: {
+    alignItems: 'center',
+    flex: 1,
+    gap: 2,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  tabLabel: {
+    color: theme.colors.tabInactive,
+    fontSize: 12,
+    fontWeight: theme.typography.weights.bold,
+  },
+  tabSlotWithAction: {
+    alignItems: 'center',
+    flex: 2,
+    flexDirection: 'row',
+  },
+});

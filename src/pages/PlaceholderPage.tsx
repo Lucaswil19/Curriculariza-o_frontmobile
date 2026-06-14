@@ -1,5 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { theme } from '../utils/theme';
+
 type PlaceholderPageProps = {
   title: string;
   description?: string;
@@ -17,29 +19,29 @@ export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
+    backgroundColor: theme.colors.background,
+    flex: 1,
+    gap: theme.spacing.md,
     justifyContent: 'center',
-    gap: 12,
-    padding: 24,
-    backgroundColor: '#fff7fb',
+    padding: theme.spacing.xl,
   },
   eyebrow: {
-    color: '#9d174d',
-    fontSize: 13,
-    fontWeight: '700',
+    color: theme.colors.primary,
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
     textAlign: 'center',
     textTransform: 'uppercase',
   },
   title: {
-    color: '#3f1232',
-    fontSize: 26,
-    fontWeight: '800',
+    color: theme.colors.foreground,
+    fontSize: theme.typography.sizes.xxl,
+    fontWeight: theme.typography.weights.extraBold,
     textAlign: 'center',
   },
   description: {
-    color: '#6b4f5f',
-    fontSize: 16,
+    color: theme.colors.mutedForeground,
+    fontSize: theme.typography.sizes.md,
     lineHeight: 24,
     maxWidth: 320,
     textAlign: 'center',

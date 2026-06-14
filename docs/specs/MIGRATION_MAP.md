@@ -102,8 +102,8 @@ Phase 7 migration status:
 
 | Source artifact | Mobile target | Responsibility |
 |---|---|---|
-| `src/components/BottomNav.tsx` | `front_mobile/src/components/layout/BottomTabs.tsx` and `front_mobile/App.tsx` | Bottom tab visuals plus route wiring for Today, Cycle, Contents and Profile. Implemented as a React Native tab visual component; route integration remains in `App.tsx`. |
-| `src/components/QuickActionsModal.tsx` | `front_mobile/src/components/layout/QuickActionsSheet.tsx` | Mobile sheet/modal for quick actions and action-to-route mapping. Implemented with `Modal`, touch actions and the preserved id-to-route mapping. |
+| `src/components/BottomNav.tsx` | `front_mobile/App.tsx` | Bottom tab visuals plus route wiring for Today, Cycle, Contents and Profile. Implemented as a custom React Navigation tab bar with the preserved center quick-action button. |
+| `src/components/QuickActionsModal.tsx` | `front_mobile/src/components/layout/QuickActionsSheet.tsx` | Mobile sheet/modal for quick actions and action-to-route mapping. Implemented with `Modal`, touch actions, the preserved id-to-route mapping and an accessible center tab-bar trigger. |
 | `src/components/MedicalDisclaimer.tsx` | `front_mobile/src/components/ui/MedicalDisclaimer.tsx` | Preserve normal and compact health-safety copy. Implemented with React Native `View`/`Text`. |
 | `src/components/NavLink.tsx` | excluded | React Router wrapper; replace with React Navigation actions. |
 | `src/components/ui/button.tsx` | `front_mobile/src/components/ui/AppButton.tsx` | Recreate only needed button variants with `Pressable`. Implemented with variants, sizes, loading and disabled states. |
@@ -261,7 +261,7 @@ Asset migration status:
 | `sonner` | Mobile feedback component or native alert pattern |
 | `@radix-ui/*` | React Native primitives/custom components |
 | `lucide-react` | `@expo/vector-icons` or existing Expo icon approach; add another icon package only if justified |
-| `react-dom` | Not used by native app screens |
+| `react-dom` | Removed from the native-only destination dependencies. |
 | `@tanstack/react-query` | Do not carry unless real async backend requests justify it |
 | `react-hook-form`, `zod`, `@hookform/resolvers` | Local React Native form state and small validation helpers first |
 | `tailwindcss`, `tailwindcss-animate`, `tailwind-merge`, `class-variance-authority`, `clsx` | `StyleSheet` plus shared theme constants; small helper only if needed |
@@ -279,16 +279,16 @@ Verified under `front_mobile/`:
 | Area | Current state | Migration implication |
 |---|---|---|
 | Project root | Existing Expo project named `front_mobile` | Reuse this project; do not create another Expo project. |
-| `package.json` main | `expo-router/entry` | Must later be changed to an `index.ts` entry that registers `App.tsx`. |
-| Scripts | `start`, `android`, `ios`, `web`, `lint`, `reset-project` | Keep useful Expo scripts; no source web scripts should be copied. |
-| Expo configuration | `app.json` includes the `expo-router` plugin, `experiments.typedRoutes: true`, `experiments.reactCompiler: true`, native icon/splash assets, scheme `frontmobile`, and Expo SDK 54-compatible app metadata | Preserve useful native app metadata and splash/icon references. Disable Expo Router plugin and typed routes later, after `App.tsx` and `index.ts` replace the router entry. |
-| Existing navigation scaffold | `app/`, `app/(tabs)/`, `app/_layout.tsx` | Expo Router scaffold exists and must be removed/disabled after `App.tsx` + React Navigation replacement is ready. |
-| Template route files | `app/_layout.tsx`, `app/modal.tsx`, `app/(tabs)/_layout.tsx`, `app/(tabs)/index.tsx`, `app/(tabs)/explore.tsx` | Current routes are Expo template screens only. They are verification input for scaffold removal and must not become the migrated product routes. |
+| `package.json` main | `index.ts` | Registers `App.tsx` through Expo `registerRootComponent`; Expo Router is not the app entry. |
+| Scripts | `start`, `android`, `ios`, `lint` | Keep useful native Expo scripts; no source web or reset scripts are copied. |
+| Expo configuration | `app.json` keeps native icon/splash assets, scheme `frontmobile`, Expo SDK 54-compatible app metadata, `web.output: single` and `experiments.reactCompiler: true`; Expo Router plugin and typed routes are disabled. | Current configuration matches the `App.tsx` + React Navigation migration path without requiring Expo Router. |
+| Existing navigation scaffold | removed | Expo Router scaffold files were removed after `App.tsx` + React Navigation became the app path. |
+| Template route files | removed | Template route files no longer exist in the destination app. |
 | TypeScript configuration | `tsconfig.json` extends `expo/tsconfig.base`, enables `strict: true`, includes `**/*.ts`, `**/*.tsx`, `.expo/types/**/*.ts` and `expo-env.d.ts`, and defines `@/*` as a root-relative alias | Compatible with the Expo TypeScript baseline for the current scaffold; future migration files can rely on strict checking, while alias usage should be revisited if imports move exclusively under `src/`. |
 | Required `src/` | Complete required folder structure now exists: `src/api/`, `src/assets/`, `src/components/layout/`, `src/components/ui/`, `src/context/`, `src/data/`, `src/hooks/`, `src/pages/`, `src/redux/`, `src/services/`, and `src/utils/` | Use these folders for all migrated implementation files. |
-| Root `App.tsx` | Created as a temporary React Native placeholder screen with Expo `StatusBar` | Replace the placeholder with React Navigation wiring during Phase 4. |
-| Root `index.ts` | Created and registers `App.tsx` with Expo `registerRootComponent` | `package.json` still points at `expo-router/entry` until T038 switches the main entry to `index.ts`. |
-| Template components | `components/`, `constants/`, `hooks/` | Existing Expo template files are outside the required structure and should not become the migration architecture. |
+| Root `App.tsx` | Wires `NavigationContainer`, native stack, bottom tabs, `AppProvider` and migrated pages | This is the migrated app entry component. |
+| Root `index.ts` | Registers `App.tsx` with Expo `registerRootComponent` | `package.json` points directly to this file. |
+| Template components | removed | Template `components/`, `constants/`, `hooks/` and `scripts/reset-project.js` were removed to keep the destination architecture focused on `front_mobile/src`. |
 | Existing assets | `assets/images/*` | Preserve until asset migration task; do not delete during verification. |
 
 Scaffold changes completed:
@@ -297,7 +297,11 @@ Scaffold changes completed:
   root `App.tsx`, instead of `expo-router/entry`.
 - `front_mobile/app.json` no longer enables the Expo Router plugin or
   `experiments.typedRoutes`; native icon, splash and app metadata were
-  preserved.
+  preserved, and `web.output` was set to `single` so Metro does not require
+  Expo Router.
+- Expo Router scaffold routes, template components, template hooks, template
+  constants and `scripts/reset-project.js` were removed because the app uses
+  `index.ts`, `App.tsx` and `front_mobile/src`.
 - The existing Expo project root remains unchanged. No new Expo project was
   created.
 - React Navigation base packages required by the navigation contract are
@@ -305,8 +309,8 @@ Scaffold changes completed:
   `@react-navigation/bottom-tabs`, `react-native-screens`,
   `react-native-safe-area-context` and `react-native-gesture-handler`.
 - `@react-navigation/native-stack` is declared in `package.json` for the root
-  stack navigator planned by the navigation contract. The package was already
-  resolved in `package-lock.json`, so no source project change was needed.
+  stack navigator planned by the navigation contract and uses the Expo SDK 54
+  expected range.
 
 Current useful installed dependencies:
 
@@ -319,15 +323,63 @@ Current useful installed dependencies:
 
 Current dependency risks:
 
-- `expo-router` is installed and active as the main entry. This conflicts with
-  the required `App.tsx` + `src/pages` architecture and must be replaced later,
-  after the new entry is in place.
-- `@react-navigation/native-stack` is not listed in `package.json`; install it
-  only if the implemented stack navigator requires it.
-- `react-dom` and `react-native-web` are present from the Expo template but web
-  output is not a migration target.
+- No app-level dependency mismatch is reported by `npx expo-doctor`.
+- `npm audit --audit-level=moderate` still reports vulnerabilities in the Expo
+  SDK 54 dependency tree. The automatic fix upgrades to Expo 56, so it should
+  be handled as a planned SDK upgrade.
 
-## Pending Detailed Mapping
+## Final Validation Notes
 
-- Scaffold changes needed in the existing Expo project.
-- Final validation notes after implementation.
+Validation completed after the migrated screens, services and navigation were
+wired:
+
+- `npm run lint` passes from `front_mobile/`.
+- `npx tsc --noEmit` passes from `front_mobile/`.
+- `npx expo-doctor` passes all 18 checks.
+- `npx expo start` starts the Expo Metro server on the default port. The
+  command was stopped by the validation timeout because Metro is a long-running
+  process.
+- Navigation validation confirms `Today`, `Cycle`, `Contents` and `Profile`
+  are bottom tabs, while `ContentDetail`, `AnonymousQuestion`, `Symptoms`,
+  `Reminders`, `Support`, `LifeStages` and `NotFound` are stack screens.
+- Quick-action validation confirms the center tab-bar button opens
+  `QuickActionsSheet` and routes `menstruacao`, `sintomas`, `corrimento`,
+  `colica`, `humor`, `lembrete`, `pergunta` and `conteudo` according to the
+  navigation contract.
+- Stack screen back actions use `navigateBackOrToday`, preserving source back
+  behavior while falling back to Hoje when no history exists.
+- API boundary validation confirms normalized `ApiResult<T>` modules exist in
+  `front_mobile/src/api`, services consume those adapters, and pages contain no
+  raw HTTP request logic.
+- Folder responsibility validation confirms migrated code is organized under
+  `src/api`, `src/assets`, `src/components`, `src/context`, `src/data`,
+  `src/pages`, `src/redux`, `src/services` and `src/utils`.
+
+## Source Preservation Verification
+
+The brownfield source project `minha-saude-feminina mobile/` was used only for
+inspection and behavior comparison during this implementation pass. No task in
+this pass required writing to the source project; implementation changes were
+kept in `front_mobile/` and Spec Kit documentation/task files.
+
+## Known Pendencies
+
+- Full interactive device/emulator walkthrough is still recommended for final
+  tactile validation of mobile layouts, gestures and keyboard behavior.
+- `npm audit --audit-level=moderate` reports moderate vulnerabilities in the
+  Expo dependency tree. The suggested automatic fix upgrades to Expo 56, so it
+  should be handled as a planned SDK upgrade rather than an automatic patch.
+- Add reminder and edit profile buttons are preserved as visual placeholders
+  because the source app also does not implement those flows.
+
+## Final State Architecture
+
+Profile/preferences state is centralized in
+`front_mobile/src/context/AppContext.tsx`, which wraps `profileService` and
+keeps notification/data-sharing updates available to migrated screens through
+Context API.
+
+Redux remains intentionally unused. `front_mobile/src/redux/README.md`
+documents the decision and the condition for introducing a store in the future:
+only add Redux if a future feature introduces cross-screen state that cannot
+remain local or be cleanly handled by Context API.

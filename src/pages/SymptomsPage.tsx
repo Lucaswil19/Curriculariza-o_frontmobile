@@ -17,6 +17,7 @@ import {
   type PendingSymptomEntry,
 } from '../services/symptomsService';
 import type { SymptomIntensity } from '../data/mockData';
+import { navigateBackOrToday } from '../utils/navigation';
 import type { RootStackScreenProps } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
 
@@ -28,11 +29,12 @@ export function SymptomsPage({ navigation }: SymptomsPageProps) {
   const [selected, setSelected] = useState<PendingSymptomEntry[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
   const symptomOptionsResult = getSymptomOptions();
+  const handleBack = () => navigateBackOrToday(navigation);
 
   if (!symptomOptionsResult.ok) {
     return (
       <AppScreen>
-        <AppHeader onBack={navigation.goBack} title="Registrar sintomas" />
+        <AppHeader onBack={handleBack} title="Registrar sintomas" />
         <ErrorMessage message="Nao foi possivel carregar a lista de sintomas." />
       </AppScreen>
     );
@@ -54,7 +56,7 @@ export function SymptomsPage({ navigation }: SymptomsPageProps) {
   return (
     <AppScreen>
       <AppHeader
-        onBack={navigation.goBack}
+        onBack={handleBack}
         subtitle="Selecione os sintomas que esta sentindo hoje"
         title="Registrar sintomas"
       />

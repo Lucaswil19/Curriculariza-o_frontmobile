@@ -12,6 +12,7 @@ export const colors = {
   accent: '#eee2f5',
   accentForeground: '#56366b',
   destructive: '#ef4444',
+  destructiveLight: '#fff1f2',
   destructiveForeground: '#ffffff',
   border: '#ede6ef',
   input: '#e7dde9',
@@ -27,10 +28,12 @@ export const colors = {
   fertileLight: '#def5e7',
   ovulation: '#e6951f',
   ovulationLight: '#faecd6',
+  tabInactive: '#817487',
+  backdrop: 'rgba(43, 27, 50, 0.32)',
 } as const;
 
 export const typography = {
-  fontFamily: 'Nunito',
+  fontFamily: 'Nunito_400Regular',
   sizes: {
     xs: 12,
     sm: 14,

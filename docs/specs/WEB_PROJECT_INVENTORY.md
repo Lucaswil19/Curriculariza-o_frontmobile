@@ -255,3 +255,37 @@ Migration rule: avoid carrying web-only dependencies to Expo. Use existing Expo
 and React Navigation packages, React Native primitives, local services and
 small reusable components.
 
+## Final Migration Status
+
+All source routes listed in `src/App.tsx` now have mobile equivalents under
+`front_mobile/src/pages` and are wired from `front_mobile/App.tsx` through
+React Navigation.
+
+| Source flow | Mobile status |
+|---|---|
+| Hoje dashboard | Migrated to `TodayPage.tsx` with cycle summary, symptoms, reminders, daily tip and disclaimer. |
+| Ciclo | Migrated to `CyclePage.tsx` with month navigation, calendar markers, stats and symptom CTA. |
+| Conteudos | Migrated to `ContentsPage.tsx` with category filters, search and empty state. |
+| Conteudo detail | Migrated to `ContentDetailPage.tsx` with not-found, content sections and feedback messages. |
+| Perfil | Migrated to `ProfilePage.tsx` with profile data, stats, toggles and links. |
+| Pergunta anonima | Migrated to `AnonymousQuestionPage.tsx` with blank validation, delayed responses and UBS guidance. |
+| Sintomas | Migrated to `SymptomsPage.tsx` with select/deselect, intensity and save feedback. |
+| Lembretes | Migrated to `RemindersPage.tsx` with completion toggle and feedback. |
+| Apoio | Migrated to `SupportPage.tsx` with Ligue 180, guidance and emergency contacts. |
+| Trilhas | Migrated to `LifeStagesPage.tsx` with life-stage cards and content CTA. |
+| NotFound | Migrated to `NotFoundPage.tsx` with mobile fallback to Hoje. |
+
+Validation completed for the migrated Expo project:
+
+- `npm run lint` passes from `front_mobile/`.
+- `npx tsc --noEmit` passes from `front_mobile/`.
+- `npx expo-doctor` passes all 18 checks.
+- `npx expo start` starts Metro on the default port and only stops because the
+  command was intentionally bounded by timeout.
+- Quick actions are reachable from the center bottom-tab button and preserve
+  the original action-to-route mapping.
+- Searches found no raw HTTP calls, DOM APIs, React Router, Sonner, Tailwind
+  `className`, or HTML JSX patterns in `front_mobile/src`.
+
+The source project remains the read-only reference. Implementation changes were
+kept under `front_mobile` plus Spec Kit documentation/task tracking files.

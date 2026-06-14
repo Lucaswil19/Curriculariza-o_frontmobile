@@ -14,6 +14,7 @@ import {
   getUserReminders,
   type ReminderViewModel,
 } from '../services/remindersService';
+import { navigateBackOrToday } from '../utils/navigation';
 import type { RootStackScreenProps } from '../utils/navigationTypes';
 import { theme } from '../utils/theme';
 
@@ -28,6 +29,7 @@ export function RemindersPage({ navigation }: RemindersPageProps) {
   const [error, setError] = useState<string | null>(
     remindersResult.ok ? null : 'Nao foi possivel carregar os lembretes.',
   );
+  const handleBack = () => navigateBackOrToday(navigation);
 
   const toggleComplete = (id: string) => {
     const result = completeReminder(id);
@@ -49,7 +51,7 @@ export function RemindersPage({ navigation }: RemindersPageProps) {
   return (
     <AppScreen>
       <AppHeader
-        onBack={navigation.goBack}
+        onBack={handleBack}
         rightAction={
           <AppButton
             accessibilityLabel="Adicionar lembrete"
